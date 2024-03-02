@@ -3,7 +3,8 @@ from init import db
 from models.hotel import Hotel
 from models.room import Room
 from models.amenity import Amenity
-
+from models.reservation import Reservation
+from models.user import User
 
 db_commands = Blueprint("db", __name__)
 

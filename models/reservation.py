@@ -5,8 +5,8 @@ class Reservation(db.Model):
     __tablename__ = "reservations"
 
     id = db.Column(db.Integer, primary_key=True)
-    check_in_date = db.Column(db.date, nullable=False)
-    check_out_date = db.Column(db.date, nullable=False)
+    check_in_date = db.Column(db.Date, nullable=False)
+    check_out_date = db.Column(db.Date, nullable=False)
     total_cost = db.Column(db.Integer, nullable=False)
 
 class ReservationSchema(ma.Schema):

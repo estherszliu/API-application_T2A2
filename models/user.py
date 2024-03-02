@@ -15,7 +15,7 @@ class User(db.Model):
 class UserSchema(ma.Schema):
 
     class Meta:
-        fields = ("id", "first_name", "last_name", "email", "is_admin")
+        fields = ("id", "first_name", "last_name", "email","password", "is_admin")
 
 user_schema = UserSchema(exclude=["password"])
 users_schema = UserSchema(many=True, exclude=["password"])

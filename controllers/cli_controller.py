@@ -1,5 +1,6 @@
 from flask import Blueprint
-from init import db
+
+from init import db, bcrypt
 from models.hotel import Hotel
 from models.room import Room
 from models.amenity import Amenity
@@ -31,6 +32,22 @@ def seed_tables():
         )
     ]
     db.session.add_all(hotel)
+
+    users = [
+        User(
+            email="admin@bigohotel.com",
+            password=bcrypt.generate_password_hash("123456").decode("utf-8"),
+            is_admin=True
+        ),
+        User(
+            first_name="Esther",
+            last_name="Dennis",
+            email="123456@gmail.com",
+            password=bcrypt.generate_password_hash("123456").decode("utf-8")
+        )
+    ]
+
+    db.session.add_all(users)
     db.session.commit()
 
     print("Tables seeded")

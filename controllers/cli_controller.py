@@ -48,6 +48,64 @@ def seed_tables():
     ]
 
     db.session.add_all(users)
+
+    rooms = [
+        Room(
+            type = "King",
+            price = 256,
+            status = "avalible",
+            hotel = hotel[0]
+        ),
+        Room(
+            type = "Queen",
+            price = 228,
+            status = "avalible",
+            hotel = hotel[0]
+        ),
+        Room(
+            type = "twin",
+            price = 256,
+            status = "avalible",
+            hotel = hotel[0]
+        ),
+         Room(
+            type = "King",
+            price = 256,
+            status = "avalible",
+            hotel = hotel[0]
+        ),
+        Room(
+            type = "Queen",
+            price = 228,
+            status = "avalible",
+            hotel = hotel[0]
+        ),
+        Room(
+            type = "twin",
+            price = 256,
+            status = "avalible",
+            hotel = hotel[0]
+        ),
+         Room(
+            type = "King",
+            price = 256,
+            status = "avalible",
+            hotel = hotel[0]
+        ),
+        Room(
+            type = "Queen",
+            price = 228,
+            status = "avalible",
+            hotel = hotel[0]
+        ),
+        Room(
+            type = "twin",
+            price = 256,
+            status = "avalible",
+            hotel = hotel[0]
+        )
+    ]
+    db.session.add_all(rooms)
     db.session.commit()
 
     print("Tables seeded")

@@ -7,6 +7,8 @@ from models.hotel import Hotel
 from models.user import User
 from controllers.room_amenity_controller import room_amenity_bp
 
+from models.room_reservation import Room_reservation, room_reservationsSchema, room_reservationSchema
+
 rooms_bp = Blueprint("rooms", __name__, url_prefix="/rooms")
 rooms_bp.register_blueprint(room_amenity_bp)
 
@@ -107,3 +109,33 @@ def is_user_admin():
 # valiadate the owner
 # if str (xxx.user_id) != get_jwt_identity():
 #     return {"error"}
+
+
+# get room_reservation route   http://localhost:8090/rooms/<int:room_id>/reservations
+@rooms_bp.route("/reservations")
+@jwt_required()
+def get_room_reservation(room_id):
+    is_admin = is_user_admin()
+    if not is_admin:
+        return {"error": "Not authorised to view all the reservations of the room"}, 403
+    
+    stmt = db.select(Room_reservation).filter_by(room_id=room_id)
+    room_reservations = db.session.scalars(stmt)
+    if room_reservations:
+        return room_reservationsSchema.dump(room_reservations)
+    else:
+        return {"error": f"Reservation with room id {room_id} not found"}, 404
+
+# get one room_reservation route   http://localhost:8090/rooms/reservations/<int:reservation_id>
+@rooms_bp.route("/reservations/<int:reservation_id>")
+@jwt_required()
+def get_one_room_reservation(room_id, reservation_id):
+    is_admin = is_user_admin()
+    if not is_admin:
+        return {"error": "Not authorised to view all the room reservations"}, 403
+    
+    body_data = request.get_json()
+    stmt = db.select(Room).filter_by(id=room_id)
+    room = db.session.scalar(stmt)
+    if room:
+        reservation

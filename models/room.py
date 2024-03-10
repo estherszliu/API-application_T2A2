@@ -1,7 +1,10 @@
 from init import db, ma
-from marshmallow import fields
+from marshmallow import fields, validates
+from marshmallow.validate import Length, And, Regexp, OneOf
+from marshmallow.exceptions import ValidationError
 
-
+VALID_TYPE = ("King", "Queen", "Double")
+VALID_STATUS = ("Avalible", "Occupy")
 class Room(db.Model):
     __tablename__ = "rooms"
 
@@ -21,6 +24,20 @@ class Room(db.Model):
     room_reservation = db.relationship("Room_reservation", back_populates="room", cascade="all, delete")
 
 class RoomSchema(ma.Schema):
+
+    type = fields.String(validate=OneOf(VALID_TYPE))
+
+    status = fields.String(validate=OneOf(VALID_STATUS))
+
+    # @validates("status")
+    # def validate_status(self, value):
+    #     if value == VALID_STATUS[1]:
+    #         stmt = db.select(db.func.count()).select_from(Room).filter_by(status=VALID_STATUS[1])
+    #         count = db.session.scalar(stmt)
+
+    #         if count > 0:
+    #             raise ValidationError("You already have an occupy room")
+
     # create hotel use by marshmallow
     hotel = fields.Nested("HotelSchema", only = ["name", "location"])
 

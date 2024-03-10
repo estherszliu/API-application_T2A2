@@ -1,17 +1,22 @@
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
+
 from init import db
 from models.room import Room, rooms_schema, room_schema
 from models.hotel import Hotel
-from models.room_amenity import Room_amenity, room_amenity_schema, room_amenities_schema
-from models.amenity import Amenity
+from models.user import User
+from controllers.room_amenity_controller import room_amenity_bp
 
 rooms_bp = Blueprint("rooms", __name__, url_prefix="/rooms")
+rooms_bp.register_blueprint(room_amenity_bp)
 
 # Get all the rooms  http://localhost:8090/rooms  --GET
 @rooms_bp.route("/")
 @jwt_required()
 def get_all_rooms():
+    is_admin = is_user_admin()
+    if not is_admin:
+        return {"error": "Not authorised to require all the rooms"}, 403
     stmt = db.select(Room).order_by(Room.id)
     rooms = db.session.scalars(stmt)
     return rooms_schema.dump(rooms)
@@ -31,7 +36,10 @@ def get_one_room(room_id):
 @rooms_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_room():
-    body_data = request.get_json()
+    is_admin = is_user_admin()
+    if not is_admin:
+        return {"error": "Not authorised to create a room"}, 403
+    body_data = room_schema.load(request.get_json())
     # query the hotel model and later for set the hotel_id to this hotel id. 
     hotel = db.select(Hotel)
     hotel = db.session.scalar(hotel)
@@ -52,6 +60,9 @@ def create_room():
 @jwt_required()
 def delete_room(room_id):
     # get the room from db
+    is_admin = is_user_admin()
+    if not is_admin:
+        return {"error": "Not authorised to delete a room"}, 403
     stmt = db.select(Room).where(Room.id == room_id)
     room = db.session.scalar(stmt)
     if room:
@@ -67,8 +78,11 @@ def delete_room(room_id):
 @rooms_bp.route("/<int:room_id>", methods=["PUT", "PATCH"])
 @jwt_required()
 def update_room(room_id):
+    is_admin = is_user_admin()
+    if not is_admin:
+        return {"error": "Not authorised to change the room information"}, 403
     # get the data from request
-    body_data = request.get_json()
+    body_data = room_schema.load(request.get_json(), partial=True)
     stmt = db.select(Room).filter_by(id=room_id)
     room = db.session.scalar(stmt)
     if room:
@@ -84,64 +98,12 @@ def update_room(room_id):
 
 
 
+def is_user_admin():
+    user_id = get_jwt_identity()
+    stmt = db.select(User).filter_by(id=user_id)
+    user = db.session.scalar(stmt)
+    return user.is_admin
 
-# Check the room_amenities route-- get the room with all the amenities
-@rooms_bp.route("/<int:room_id>/amenities")
-def get_room_amenities(room_id):
-    stmt = db.select(Room_amenity).filter_by(room_id=room_id)
-    amenities = db.session.scalar(stmt)
-    if amenities:
-        return room_amenity_schema.dump(amenities)
-    else:
-        return {"Error": f"Amenities with room id {room_id} not found"}, 404
-    
-
-# Create the room amenities 
-@rooms_bp.route("/<int:room_id>/amenities", methods=["POST"])
-def create_room_amenity(room_id):
-    body_data = request.get_json()
-    stmt = db.select(Room).filter_by(id=room_id)
-    room = db.session.scalar(stmt)
-    if room:
-        amenity_id = body_data.get("amenity_id")
-        amenity_stmt = db.select(Amenity).filter_by(id=amenity_id)
-        amenity = db.session.scalar(amenity_stmt)
-
-        validate_room = db.select(Room_amenity).filter_by(room_id=room_id)
-        validate_room = db.session.scalars(validate_room)
-        print(validate_room)
-
-        if not amenity:
-            return {"Error": f"amenity id not found"}, 404
-        # validate the amenity_id wherether is in this room_amenity already
-
-        validate_room = db.select(Room_amenity).filter_by(room_id=room_id,amenity_id=amenity_id)
-        validate_room = db.session.scalars(validate_room)
-        if validate_room:
-            return {"Error": f"amenity id is already exists"}, 409
-        
-        room_amenity = Room_amenity(
-            amenity_id = amenity_id,
-            room_id = room_id
-        )
-        db.session.add(room_amenity)
-        db.session.commit()
-        return room_amenity_schema.dump(room_amenity), 201   
-            
-    else:
-        return {"Error": f"Amenities with room id {room_id} not found"}, 404
-
-
-# Delete the room amenities
-@rooms_bp.route("/<int:room_id>/amenities/<int:room_amenity_id>", methods=["DELETE"])
-def delete_room_amenity(room_id, room_amenity_id):
-    stmt = db.select(Room_amenity).filter_by(id=room_amenity_id)
-    amenity = db.session.scalar(stmt)
-    if amenity and amenity.room_id == room_id:
-        db.session.delete(amenity)
-        db.session.commit()
-        return {"message": f"Amenity with id {room_amenity_id} has been deleted"}
-    else:
-        return {"Error": f"Amenity with id {room_amenity_id} not found"}, 404
-    
-
+# valiadate the owner
+# if str (xxx.user_id) != get_jwt_identity():
+#     return {"error"}

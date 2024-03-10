@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, date
-
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request
 from sqlalchemy.exc import IntegrityError
 from psycopg2 import errorcodes
@@ -20,6 +20,7 @@ def validate_dates(check_in_date, check_out_date):
 
 # http://localhost:8090/reservations/ --GET
 @reservation_bp.route("/")
+@jwt_required()
 def get_all_reservations():
     stmt = db.select(Reservation).order_by(Reservation.id)
     reservations = db.session.scalars(stmt)
@@ -28,6 +29,7 @@ def get_all_reservations():
 
 # http://localhost:8090/reservations/<reservation_id> --GET a single reservation by id
 @reservation_bp.route("/<int:reservation_id>")
+@jwt_required()
 def get_reservation(reservation_id):
     stmt = db.select(Reservation).filter_by(id=Reservation.id)
     reservation = db.session.scalar(stmt)
@@ -39,6 +41,7 @@ def get_reservation(reservation_id):
 
 # Create a reservation http://localhost:8090/reservations/ --POST
 @reservation_bp.route("/", methods = ["POST"])
+@jwt_required()
 def create_reservation():
    
     body_data = request.get_json()
@@ -66,6 +69,7 @@ def create_reservation():
 
 # Delete a reservation http://localhost:8090/reservations/<reservation_id> --POST
 @reservation_bp.route("/<int:reservation_id>", methods = ["DELETE"])
+@jwt_required()
 def delete_reservation(reservation_id):
     stmt = db.select(Reservation).where(Reservation.id==reservation_id)
     reservation = db.session.scalar(stmt)
@@ -78,6 +82,7 @@ def delete_reservation(reservation_id):
 
 # Update a reservation http://localhost:8090/reservations/<reservation_id> --PUT OR PATCH
 @reservation_bp.route("/<int:reservation_id>", methods = ["PUT", "PATCH"])
+@jwt_required()
 def update_reservation(reservation_id):
     body_data = request.get_json()
     stmt = db.select(Reservation).filter_by(id=reservation_id)

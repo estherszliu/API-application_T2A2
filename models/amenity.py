@@ -13,10 +13,10 @@ class Amenity(db.Model):
     room_amenity = db.relationship("Room_amenity", back_populates="amenity")
 class AmenitySchema(ma.Schema):
     
-    room_amenity = fields.List(fields.Nested("room_amenitySchema"), exclude=["amenity"])
+    room_amenity = fields.List(fields.Nested("Room_amenitySchema"), exclude=["amenity"])
 
     class Meta:
-        fields = ("id", "name", "cost", "description", "room_amenity")
+        fields = ("id", "name", "cost", "description")
 
 
 amenity_schema = AmenitySchema()

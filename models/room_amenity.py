@@ -13,13 +13,14 @@ class Room_amenity(db.Model):
     room = db.relationship("Room", back_populates="room_amenity")
     amenity = db.relationship("Amenity", back_populates="room_amenity")
 
-
+    
 # create schema
 class Room_amenitySchema(ma.Schema):
     # user schema to serialize the field back to python objects. 
     room = fields.Nested("RoomSchema", only=["id","type"])
 
-    amenity = fields.Nested("AmenitySchema", exclude=["room_amenity"])
+    # amenity = fields.Nested("AmenitySchema", exclude=["room_amenity"])
+    amenity = fields.Nested("AmenitySchema")
 
     class Meta():
         fields = ("id", "room", "amenity" )

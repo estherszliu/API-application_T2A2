@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from sqlalchemy.exc import IntegrityError
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from psycopg2 import errorcodes
 from init import db
 from models.amenity import Amenity, amenity_schema, amenities_schema
@@ -8,6 +9,7 @@ amenity_bp = Blueprint("amenities", __name__, url_prefix="/amenities")
 
 # Get all the amenities  http://localhost:8090/amenities  --GET
 @amenity_bp.route("/")
+@jwt_required()
 def get_all_amenities():
     stmt = db.select(Amenity).order_by(Amenity.id)
     amenities = db.session.scalars(stmt)
@@ -15,6 +17,7 @@ def get_all_amenities():
 
 # Get a single amenity route  http://localhost:8090/amenities/4  --GET
 @amenity_bp.route("/<int:amenity_id>")
+@jwt_required()
 def get_one_amenity(amenity_id):
     stmt = db.select(Amenity).filter_by(id=amenity_id) 
     amenity = db.session.scalar(stmt)
@@ -25,6 +28,7 @@ def get_one_amenity(amenity_id):
 
  # create an amenity  http://localhost:8090/amenities  --POST
 @amenity_bp.route("/", methods=["POST"])
+@jwt_required()
 def create_amenity():
     try:
         body_data = request.get_json()
@@ -48,6 +52,7 @@ def create_amenity():
 
 # delete amenity route  http://localhost:8090/amenities/1 --DELETE
 @amenity_bp.route("/<int:amenity_id>", methods=["DELETE"])
+@jwt_required()
 def delete_amenity(amenity_id):
     stmt = db.select(Amenity).where(Amenity.id == amenity_id)
     amenity = db.session.scalar(stmt)
@@ -62,6 +67,7 @@ def delete_amenity(amenity_id):
 # update Amenity route   
 # http://localhost:8090/amenities/2  -- acept both PUT and PATCH
 @amenity_bp.route("/<int:amenity_id>", methods=["PUT", "PATCH"])
+@jwt_required()
 def update_amenity(amenity_id):
     body_data = request.get_json()
     stmt = db.select(Amenity).filter_by(id=amenity_id)

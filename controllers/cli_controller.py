@@ -2,7 +2,6 @@ from flask import Blueprint
 from datetime import datetime, timedelta, date
 
 from init import db, bcrypt
-from models.hotel import Hotel
 from models.room import Room
 from models.amenity import Amenity
 from models.reservation import Reservation
@@ -27,19 +26,12 @@ def drop_tables():
 
 @db_commands.cli.command("seed")
 def seed_tables(): 
-    hotel = Hotel(
-            name = "Big O hotel",
-            location = "Brisbane",
-            email = "bigohotel@bitohotel.com",
-            contact = "12345678"
-        )
-    db.session.add(hotel)
 
     users = [
         User(
-            first_name ="Admin1",
-            last_name = "Hotel",
-            email="admin@bigohotel.com",
+            first_name ="Patrick",
+            last_name = "Cummins",
+            email="patrick@gmail.com",
             password=bcrypt.generate_password_hash("123456").decode("utf-8"),
             is_admin=True
         ),
@@ -74,57 +66,15 @@ def seed_tables():
     rooms = [
         Room(
             type = "King",
-            price = 256,
-            status = "avalible",
-            hotel = hotel
+            price = 256
         ),
         Room(
             type = "Queen",
-            price = 228,
-            status = "avalible",
-            hotel = hotel
+            price = 228
         ),
         Room(
-            type = "twin",
-            price = 256,
-            status = "avalible",
-            hotel = hotel
-        ),
-         Room(
-            type = "King",
-            price = 256,
-            status = "avalible",
-            hotel = hotel
-        ),
-        Room(
-            type = "Queen",
-            price = 228,
-            status = "avalible",
-            hotel = hotel
-        ),
-        Room(
-            type = "twin",
-            price = 256,
-            status = "avalible",
-            hotel = hotel
-        ),
-         Room(
-            type = "King",
-            price = 256,
-            status = "avalible",
-            hotel = hotel
-        ),
-        Room(
-            type = "Queen",
-            price = 228,
-            status = "avalible",
-            hotel = hotel
-        ),
-        Room(
-            type = "twin",
-            price = 256,
-            status = "avalible",
-            hotel = hotel
+            type = "Double",
+            price = 218
         )
     ]
     db.session.add_all(rooms)
@@ -132,17 +82,14 @@ def seed_tables():
     amenity = [
         Amenity(
             name = "Swimming pool",
-            cost = 0,
             description = "Swimming pool is open from 8am to 9pm everydays for all the room guests"
         ),
         Amenity(
             name = "Gymnasium",
-            cost = 0,
             description = "Gymnasium is open 24 hours for all the room guests, access by the room card"
         ),
         Amenity(
             name = "Hotel breakfast",
-            cost = 60,
             description = "Breakfast buffet from morning 6am to 10am everyday"
         )
     ]
@@ -150,24 +97,14 @@ def seed_tables():
 
     reservation = [
         Reservation(
-            check_in_date = datetime(24, 5, 9).date(),
-            check_out_date = datetime(24, 5, 10).date(),
-            total_night = 1
+            check_in_date = datetime(2024, 5, 9).date(),
+            check_out_date = datetime(2024, 5, 10).date(),
+            total_cost = 256
         ),
         Reservation(
-            check_in_date = datetime(24, 6, 9).date(),
-            check_out_date = datetime(24, 6, 15).date(),
-            total_night = 6
-        ),
-        Reservation(
-            check_in_date = datetime(24, 7, 10).date(),
-            check_out_date = datetime(24, 7, 15).date(),
-            total_night = 5
-        ),
-        Reservation(
-            check_in_date = datetime(24, 5, 9).date(),
-            check_out_date = datetime(24, 5, 19).date(),
-            total_night = 10
+            check_in_date = datetime(2024, 6, 9).date(),
+            check_out_date = datetime(2024, 6, 15).date(),
+            total_cost = 1368
         )
     ]
     db.session.add_all(reservation)
@@ -178,40 +115,8 @@ def seed_tables():
             amenity = amenity[0]
         ),
         Room_amenity(
-            room = rooms[0],
-            amenity = amenity[2]
-        ),
-        Room_amenity(
-            room = rooms[1],
-            amenity = amenity[0]
-        ),
-        Room_amenity(
             room = rooms[1],
             amenity = amenity[1]
-        ),
-        Room_amenity(
-            room = rooms[1],
-            amenity = amenity[2]
-        ),
-        Room_amenity(
-            room = rooms[2],
-            amenity = amenity[0]
-        ),
-        Room_amenity(
-            room = rooms[2],
-            amenity = amenity[2]
-        ),
-        Room_amenity(
-            room = rooms[3],
-            amenity = amenity[0]
-        ),
-        Room_amenity(
-            room = rooms[3],
-            amenity = amenity[2]
-        ),
-        Room_amenity(
-            room = rooms[4],
-            amenity = amenity[0]
         )
 
     ]
@@ -227,16 +132,6 @@ def seed_tables():
             user = users[2],
             reservation = reservation[1],
             reservation_date = date.today()
-        ),
-        User_reservation(
-            user = users[3],
-            reservation = reservation[2],
-            reservation_date = date.today()
-        ),
-        User_reservation(
-            user = users[4],
-            reservation = reservation[3],
-            reservation_date = date.today()
         )
     ]
     db.session.add_all(user_reservation)
@@ -244,23 +139,11 @@ def seed_tables():
     room_reservation = [
         Room_reservation(
             room = rooms[0],
-            reservation = reservation[0],
-            total_cost = (rooms[0].price) * (reservation[0].total_night)
+            reservation = reservation[0]
         ),
         Room_reservation(
             room = rooms[1],
-            reservation = reservation[1],
-            total_cost = (rooms[1].price) * (reservation[1].total_night)
-        ),
-        Room_reservation(
-            room = rooms[2],
-            reservation = reservation[2],
-            total_cost = (rooms[2].price) * (reservation[2].total_night)
-        ),
-        Room_reservation(
-            room = rooms[3],
-            reservation = reservation[3],
-            total_cost = (rooms[3].price) * (reservation[3].total_night)
+            reservation = reservation[1]
         )
 
     ]

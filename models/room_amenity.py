@@ -10,8 +10,8 @@ class Room_amenity(db.Model):
     amenity_id = db.Column(db.Integer, db.ForeignKey("amenities.id"), nullable=False)
 
      # sqlalchemy create a relationship between tables
-    room = db.relationship("Room", back_populates="room_amenity")
-    amenity = db.relationship("Amenity", back_populates="room_amenity")
+    room = db.relationship("Room", back_populates="room_amenity", cascade="all, delete")
+    amenity = db.relationship("Amenity", back_populates="room_amenity", cascade="all, delete")
 
     
 # create schema

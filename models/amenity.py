@@ -7,16 +7,15 @@ class Amenity(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False, unique=True)
-    cost = db.Column(db.Integer)
     description = db.Column(db.Text)
 
-    room_amenity = db.relationship("Room_amenity", back_populates="amenity")
+    room_amenity = db.relationship("Room_amenity", back_populates="amenity", cascade="all, delete")
 class AmenitySchema(ma.Schema):
     
     # room_amenity = fields.List(fields.Nested("Room_amenitySchema"), exclude=["amenity"])
     room_amenity = fields.List(fields.Nested("Room_amenitySchema"))
     class Meta:
-        fields = ("id", "name", "cost", "description")
+        fields = ("id", "name", "description")
 
 
 amenity_schema = AmenitySchema()

@@ -42,4 +42,7 @@ def create_app():
     from controllers.reservation_controller import reservation_bp
     app.register_blueprint(reservation_bp)
 
+    from controllers.user_controller import user_bp
+    app.register_blueprint(user_bp)
+
     return app

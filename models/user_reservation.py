@@ -18,7 +18,8 @@ class User_reservationSchema(ma.Schema):
     # use schema to serialize the field back to python objects. 
     user = fields.Nested("UserSchema", only=["id", "email"])
 
-    reservation = fields.Nested("ReservationSchema", exclude=["user_reservation"])
+    # reservation = fields.Nested("ReservationSchema", exclude=["user_reservation"])
+    reservation = fields.Nested("ReservationSchema")
 
     class Meta():
         fields = ("id", "user", "reservation" )

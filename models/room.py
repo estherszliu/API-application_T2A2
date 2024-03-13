@@ -20,8 +20,8 @@ class RoomSchema(ma.Schema):
 
     type = fields.String(validate=OneOf(VALID_TYPE))
 
-    room_amenity = fields.List(fields.Nested("Room_amenitySchema",exclude=["room"] ))
-
+    # room_amenity = fields.List(fields.Nested("Room_amenitySchema",exclude=["room"] ))
+    room_amenity = fields.List(fields.Nested("Room_amenitySchema"))
     room_reservation = fields.List(fields.Nested("Room_reservationSchema",exclude=["room"] ))
 
     class Meta:

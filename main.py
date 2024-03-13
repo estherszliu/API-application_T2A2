@@ -3,6 +3,7 @@ from flask import Flask
 
 from init import db, ma, bcrypt, jwt
 from marshmallow.exceptions import ValidationError
+from errors import BadRequestError, UnauthorisedUserError, NotFoundError, ConflictError
 
 def create_app():
     app = Flask(__name__)
@@ -23,7 +24,22 @@ def create_app():
     @app.errorhandler(ValidationError)
     def validation_error(error):
         return {"Error": error.messages}, 400
+    
+    @app.errorhandler(BadRequestError)
+    def bad_request_error(error):
+        return {"Error": str(error)}, 400
+    
+    @app.errorhandler(UnauthorisedUserError)
+    def unauthorised_user_error(error):
+        return {"Error": str(error)}, 403
+    
+    @app.errorhandler(NotFoundError)
+    def not_found_error(error):
+        return {"Error": str(error)}, 404
 
+    @app.errorhandler(ConflictError)
+    def conflict_error(error):
+        return {"Error": str(error)}, 409
 
     # register cli_controller blueprint 
     from controllers.cli_controller import db_commands

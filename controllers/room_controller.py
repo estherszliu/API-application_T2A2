@@ -15,6 +15,14 @@ from controllers.room_amenity_controller import room_amenity_bp
 rooms_bp = Blueprint("rooms", __name__, url_prefix="/rooms")
 rooms_bp.register_blueprint(room_amenity_bp)
 
+
+
+def is_user_admin():
+    user_id = get_jwt_identity()
+    stmt = db.select(User).filter_by(id=user_id)
+    user = db.session.scalar(stmt)
+    return user.is_admin
+
 # Get all the rooms  http://localhost:8090/rooms  --GET
 @rooms_bp.route("/")
 @jwt_required()
@@ -57,7 +65,6 @@ def create_room():
     for id in amenity_ids:
         amenity_stmt = db.select(Amenity).filter_by(id=id)
         amenity = db.session.scalar(amenity_stmt)
-        print(amenity )
         if amenity:
             room_amenity = Room_amenity(
                 room = room, 
@@ -134,11 +141,6 @@ def update_room(room_id):
 
 
 
-def is_user_admin():
-    user_id = get_jwt_identity()
-    stmt = db.select(User).filter_by(id=user_id)
-    user = db.session.scalar(stmt)
-    return user.is_admin
 
 # valiadate the owner
 # if str (xxx.user_id) != get_jwt_identity():
@@ -161,46 +163,3 @@ def get_room_reservation(room_id):
     else:
         return {"error": f"Reservation with room id {room_id} not found"}, 404
 
-
-
-
-
-# # # get one room_reservation route   http://localhost:8090/rooms/reservations/<int:reservation_id>
-# @rooms_bp.route("/<int:room_id>/reservations", methods=["POST"])
-# @jwt_required()
-# def get_one_room_reservation(room_id):
-#     is_admin = is_user_admin()
-#     if not is_admin:
-#         return {"error": "Not authorised to view all the room reservations"}, 403
-    
-#     body_data =request.get_json()
-#     stmt = db.select(Room).filter_by(id=room_id)
-#     room = db.session.scalar(stmt)
-#     if room:
-#         reservation_id = body_data.get("reservation_id")
-#         reservation_stmt = db.select(Reservation).filter_by(id=reservation_id)
-#         reservations = db.session.scalar(reservation_stmt)
-#         if not reservations:
-#             return {"error": f"reservation with id {reservation_id} invalid"}, 409
-
-#         check_in_date = datetime.strptime(body_data.get("check_in_date"), "%Y-%m-%d")
-#         check_out_date = datetime.strptime(body_data.get("check_out_date"), "%Y-%m-%d")
-#         if is_room_avalible(room_id, check_in_date, check_out_date):
-#             reservation = Reservation(
-#                 check_in_date = check_in_date,
-#                 check_out_date = check_out_date,
-#                 total_night = (check_out_date - check_in_date).days
-#             )
-#             db.session.add(reservation)
-
-#             room_reservation =Room_reservation(
-#                 room_id = room_id,
-#                 reservation_id = reservation_id,
-#                 total_cost = reservation.total_night * room.price 
-#             )
-#             db.session.add(room_reservation)
-#             db.session.commit()
-#             return room_reservationsSchema.dump(room_reservation)
-        
-#     else:
-#         return {"error": f"Room with id {room_id} not found"}, 404

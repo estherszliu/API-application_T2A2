@@ -321,50 +321,8 @@ def update_reservation(reservation_id):
     except ConflictError as error:
         return {"Error": str(error)}, 409
 
-    # body_data = request.get_json()
-    # stmt = db.select(Reservation).filter_by(id=reservation_id)
-    # reservation = db.session.scalar(stmt)
-    # if reservation: 
-    #     if not is_admin_or_reservation_owner(reservation_id):
-    #         return {"error": f"Not authorised to update the reservation"}, 403
-    #     try:   
-    #         if "check_in_date" in body_data and "check_out_date" in body_data:
-    #             check_in_date = datetime.strptime(body_data.get("check_in_date"), "%y-%m-%d").date()
-    #             check_out_date = datetime.strptime(body_data.get("check_out_date"), "%y-%m-%d").date()
-    #             validate_dates(check_in_date, check_out_date)
-    #             reservation.check_in_date = check_in_date
-    #             reservation.check_out_date = check_out_date
 
-    #         elif "check_in_date" in body_data and not "check_out_date" in body_data:
-    #             check_in_date = datetime.strptime(body_data.get("check_in_date"), "%y-%m-%d").date()
-    #             check_out_date = reservation.check_out_date
-    #             validate_dates(check_in_date, check_out_date)
-    #             reservation.check_in_date = check_in_date
-                
-    #         elif "check_out_date" in body_data and not "check_in_date" in body_data:
-    #             check_out_date = datetime.strptime(body_data.get("check_out_date"), "%y-%m-%d").date()
-    #             check_in_date = reservation.check_in_date
-    #             validate_dates(check_in_date, check_out_date)
-    #             reservation.check_out_date = check_out_date
-            
-    #         room_reservations = db.session.query(Room_reservation)\
-    #             .join(Reservation, Reservation.id == Room_reservation.reservation_id)\
-    #             .filter(Room_reservation.reservation_id == reservation_id).all()
-    #         room_ids = []
-    #         for room_reservation in room_reservations:
-    #             room_ids.append(room_reservation.room_id)
-
-    #         reservation.total_cost = get_total_reservation_cost(room_ids, check_in_date, check_out_date)
-    #         db.session.commit()
-    #         return reservation_schema.dump(reservation)
-
-    #     except ValueError:
-    #         return {"Error": f"invalid check_in_date or check_out_date"}, 409
-    #     except ValidationError as error:
-    #         return {"Error": str(error)}, 400
-        
-    # else:
-    #         return{"Error":f"reservation with id {reservation_id} not found"}, 404
+    # 
 
 
     

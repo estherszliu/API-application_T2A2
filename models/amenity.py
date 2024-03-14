@@ -1,6 +1,9 @@
 from init import db, ma
 
 from marshmallow import fields
+from marshmallow.validate import OneOf
+
+VALID_NAME = ("Swimming pool", "Gymnasium", "Hotel breakfast", "Day spa", "Shuttle bus")
 
 class Amenity(db.Model):
     __tablename__ = "amenities"
@@ -11,6 +14,8 @@ class Amenity(db.Model):
 
     room_amenity = db.relationship("Room_amenity", back_populates="amenity", cascade="all, delete")
 class AmenitySchema(ma.Schema):
+    
+    name = fields.String(validate=OneOf(VALID_NAME))
     
     # room_amenity = fields.List(fields.Nested("Room_amenitySchema"), exclude=["amenity"])
     room_amenity = fields.List(fields.Nested("Room_amenitySchema"))

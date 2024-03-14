@@ -1,24 +1,15 @@
-from flask import Blueprint, request
-from init import db
-from models.room import Room, rooms_schema, room_schema
+from controllers.validation_helpers import validate_room_exists, validate_room_not_assigned_to_any_amenity, validate_room_has_no_reservations
 from models.room_reservation import Room_reservation, room_reservationsSchema
-from models.reservation import Reservation
 from controllers.room_amenity_controller import room_amenity_bp
+from models.room import Room, rooms_schema, room_schema
+from models.reservation import Reservation
 from decorators import jwt_admin_required
-from errors import NotFoundError, ConflictError
+from flask import Blueprint, request
+from errors import NotFoundError
+from init import db
 
 rooms_bp = Blueprint("rooms", __name__, url_prefix="/rooms")
 rooms_bp.register_blueprint(room_amenity_bp)
-
-def validate_room_exists(room_id):
-
-    # QUERY COMMENT
-    #   Get the number of rooms in the database that have the given room id
-    #   This will return 0 if no rooms exist for give id
-    numRooms = db.session.query(Room).where(Room.id == room_id).count()
-    
-    if numRooms == 0:
-        raise NotFoundError(f"Room with id {room_id} not found")
 
 # Get all the rooms  http://localhost:8090/rooms  --GET
 @rooms_bp.route("/")
@@ -51,7 +42,7 @@ def get_one_room(room_id):
 @rooms_bp.route("/", methods=["POST"])
 @jwt_admin_required
 def create_room():
-    body_data = request.get_json()
+    body_data = room_schema.load(request.get_json())
     room = Room(
         type = body_data.get("type"),
         price = body_data.get("price")
@@ -69,15 +60,10 @@ def create_room():
 @jwt_admin_required
 def delete_room(room_id):
 
-    # make sure the room exists before delete
+    # validate room exists and not in use before delete
     validate_room_exists(room_id)
-
-    # QUERY COMMENT
-    #   Get the number of reservations for the given room id
-    #   This will return 0 if no reservations exist for given room id
-    numReservations = db.session.query(Room_reservation).where(Room_reservation.room_id == room_id).count()
-    if numReservations > 0:
-        raise ConflictError(f"room with id {room_id} has a reservation, can not be deleted")
+    validate_room_not_assigned_to_any_amenity(room_id)
+    validate_room_has_no_reservations(room_id)
     
     # QUERY COMMENT
     #   Delete the room in the database that has the given room id
@@ -93,17 +79,18 @@ def delete_room(room_id):
 @jwt_admin_required
 def update_room(room_id):
     
+    # validate data
+    validate_room_exists(room_id)
+
     # get the data from request
-    body_data = request.get_json()
+    body_data = room_schema.load(request.get_json())
     
     # QUERY COMMENT
     #   Get all the data for the room that has the given room id
     #   This will return None if there is no room with that id
     room = db.session.query(Room).where(Room.id == room_id).first()
 
-    if not room:
-        raise NotFoundError(f"Room with id {room_id} not found")
-    
+    # update the room data    
     room.type = body_data.get("type") or room.type
     room.price = body_data.get("price") or room.price
 

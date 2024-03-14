@@ -1,9 +1,11 @@
-import os
-from flask import Flask
-
-from init import db, ma, bcrypt, jwt
-from marshmallow.exceptions import ValidationError
 from errors import BadRequestError, UnauthorisedUserError, NotFoundError, ConflictError
+from marshmallow.exceptions import ValidationError
+from sqlalchemy.exc import IntegrityError
+from init import db, ma, bcrypt, jwt
+from psycopg2 import errorcodes
+from flask import Flask
+import os
+
 
 def create_app():
     app = Flask(__name__)
@@ -23,23 +25,36 @@ def create_app():
 
     @app.errorhandler(ValidationError)
     def validation_error(error):
-        return {"Error": error.messages}, 400
+        return {"error": error.messages}, 400
     
     @app.errorhandler(BadRequestError)
     def bad_request_error(error):
-        return {"Error": str(error)}, 400
+        return {"error": str(error)}, 400
     
     @app.errorhandler(UnauthorisedUserError)
     def unauthorised_user_error(error):
-        return {"Error": str(error)}, 403
+        return {"error": str(error)}, 403
     
     @app.errorhandler(NotFoundError)
     def not_found_error(error):
-        return {"Error": str(error)}, 404
+        return {"error": str(error)}, 404
 
     @app.errorhandler(ConflictError)
     def conflict_error(error):
-        return {"Error": str(error)}, 409
+        return {"error": str(error)}, 409
+    
+    @app.errorhandler(IntegrityError)
+    def integrity_error(error):
+        print("start")
+        print(str(error.orig.diag))
+        
+        print("end")
+        if error.orig.pgcode == errorcodes.NOT_NULL_VIOLATION:
+            return {"error": f"The {error.orig.diag.column_name} is required"}, 400
+        if error.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
+            return {"error": f"{error.orig}"}, 409
+        
+        return {"error": f"Unknown integrity error"}, 500
 
     # register cli_controller blueprint 
     from controllers.cli_controller import db_commands

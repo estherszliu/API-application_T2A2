@@ -1,131 +1,103 @@
-from flask import Blueprint, request
-from sqlalchemy.exc import IntegrityError
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from psycopg2 import errorcodes
-from init import db
+from controllers.validation_helpers import validate_amenity_exists, validate_amenity_not_assigned_to_any_rooms
 from models.amenity import Amenity, amenity_schema, amenities_schema
-from models.room_amenity import Room_amenity
-from models.user import User
+from decorators import jwt_admin_required
+from flask import Blueprint, request
+from init import db
 
 amenity_bp = Blueprint("amenities", __name__, url_prefix="/amenities")
-
-class ValidationError(Exception):
-    pass
-
-class ConflictError(Exception):
-    pass
-
-class NotFoundError(Exception):
-    pass
-
-def is_user_admin():
-    user_id = get_jwt_identity()
-    stmt = db.select(User).filter_by(id=user_id)
-    user = db.session.scalar(stmt)
-    return user.is_admin
-
-
-# validate the amenity_id whether in use
-def amenity_id_in_use(amenity_id, room_id):
-    in_use = db.session.query(Room_amenity)\
-        .filter(Room_amenity.room_id==room_id, Room_amenity.amenity_id==amenity_id)\
-        .first()
-    if in_use:
-        raise ConflictError(f"The amenity with id {amenity_id} is in use, can not be delete.")
     
 # Get all the amenities  http://localhost:8090/amenities  --GET
 @amenity_bp.route("/")
-@jwt_required()
+@jwt_admin_required
 def get_all_amenities():
+
+    # QUERY COMMENT
+    #   Get an ordered list of all the data for each amenity in the database.
+    #   Order the list according to amenity ids
+    #   SELECT * FROM amenities ORDER BY id;
     stmt = db.select(Amenity).order_by(Amenity.id)
     amenities = db.session.scalars(stmt)
     return amenities_schema.dump(amenities)
 
 # Get a single amenity route  http://localhost:8090/amenities/4  --GET
 @amenity_bp.route("/<int:amenity_id>")
-@jwt_required()
+@jwt_admin_required
 def get_one_amenity(amenity_id):
-    stmt = db.select(Amenity).filter_by(id=amenity_id) 
-    amenity = db.session.scalar(stmt)
-    if amenity:
-        return amenity_schema.dump(amenity)
-    else:
-        return {"Error": f"Amenity with id {amenity_id} not found"}, 404
+    validate_amenity_exists(amenity_id)
+
+    # QUERY COMMENT
+    #   Get the amenity which has the given amenity id
+    #   This will return None if there is no amenity with that id
+    #   SELECT * FROM amenities WHERE id = amenity_id
+    amenity = db.session.query(Amenity) \
+        .filter_by(id=amenity_id) \
+        .first() 
+
+    return amenity_schema.dump(amenity)
 
  # create an amenity  http://localhost:8090/amenities  --POST
 @amenity_bp.route("/", methods=["POST"])
-@jwt_required()
+@jwt_admin_required
 def create_amenity():
-    is_admin = is_user_admin()
-    if not is_admin:
-        return {"error": "Not authorised to create a amenity"}, 403
-    
-    try:
-        body_data = request.get_json()
-        amenity = Amenity(
-            name = body_data.get("name"),
-            description = body_data.get("description")
-        )
-        db.session.add(amenity)
-        db.session.commit()
-        return amenity_schema.dump(amenity), 201
-    
-    except IntegrityError as err:
-        if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION:
-            return {"error": f"The {err.orig.diag.column_name} is required"}, 409
-        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
-            return {"error": "Amenity name already in exist"}, 409
 
+    # load the data
+    body_data = amenity_schema.load(request.get_json())
+    
+    # create a new amenity
+    amenity = Amenity(
+        name = body_data.get("name"),
+        description = body_data.get("description")
+    )
+    # QUERY COMMENT
+    #   Add the new amenity to the amenity table
+    db.session.add(amenity)
 
+    db.session.commit()
+    return amenity_schema.dump(amenity), 201
+    
 
 # delete amenity route  http://localhost:8090/amenities/1 --DELETE
 @amenity_bp.route("/<int:amenity_id>", methods=["DELETE"])
-@jwt_required()
+@jwt_admin_required
 def delete_amenity(amenity_id):
-    is_admin = is_user_admin()
-    if not is_admin:
-        return {"error": "Not authorised to create a amenity"}, 403
-    
-    try:
-        stmt = db.select(Amenity).where(Amenity.id == amenity_id)
-        amenity = db.session.scalar(stmt)
-        if amenity:
-            db.session.delete(amenity)
-            db.session.commit()
-            return {"message": f"Amenity {amenity_id} deleted successfully"}
-        else:
-            return {"error": f"Amenity with id {amenity_id} not found"}, 404
 
-    except ValidationError as error:
-        return {"Error": str(error)}, 400
-    except NotFoundError as error:
-        return {"Error": str(error)}, 404
-    except ConflictError as error:
-        return {"Error": str(error)}, 409
+    # validate the data
+    validate_amenity_exists(amenity_id)
+    validate_amenity_not_assigned_to_any_rooms(amenity_id)
+
+    # QUERY COMMENT
+    #   Delete the amenity to the database that has the given amenity_id
+    db.session.query(Amenity).where(Amenity.id == amenity_id).delete()
+    db.session.commit()
+    return {"message": f"Amenity {amenity_id} deleted successfully"}
+
     
-# update Amenity route   
+# update amenity route   
 # http://localhost:8090/amenities/2  -- acept both PUT and PATCH
 @amenity_bp.route("/<int:amenity_id>", methods=["PUT", "PATCH"])
-@jwt_required()
+@jwt_admin_required
 def update_amenity(amenity_id):
-    is_admin = is_user_admin()
-    if not is_admin:
-        return {"error": "Not authorised to create a amenity"}, 403
     
-    body_data = request.get_json()
-    stmt = db.select(Amenity).filter_by(id=amenity_id)
-    amenity = db.session.scalar(stmt)
+    # validate data
+    validate_amenity_exists(amenity_id)
 
-    if amenity:
-        try:
-            amenity.name = body_data.get("name") or amenity.type
-            amenity.description = body_data.get("description") or amenity.description
-            db.session.commit()
-            return amenity_schema.dump(amenity)
-        
-        except IntegrityError as err:
-            if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
-                return {"error": f"Amenity name already in exist"}, 409
-    else:
-        return {"error": f"amenity with id {amenity_id} not found"}, 404
+    # get the data from request
+    body_data = amenity_schema.load(request.get_json())
+
+    # QUERY COMMENT
+    #   Get the amenity which has the given amenity id
+    #   SELECT * FROM amenities WHERE id = amenity_id
+    amenity = db.session.query(Amenity) \
+        .filter_by(id=amenity_id) \
+        .first()
+    
+    # update amenity data
+    amenity.name = body_data.get("name") or amenity.name
+    amenity.description = body_data.get("description") or amenity.description
+    
+    # save data back to database
+    db.session.commit()
+    return amenity_schema.dump(amenity)
+
+   
      

@@ -1,8 +1,8 @@
 from controllers.validation_helpers import validate_amenity_exists, validate_amenity_not_assigned_to_any_rooms
-from models.amenity import Amenity, amenity_schema, amenities_schema
 from decorators import jwt_admin_required
 from flask import Blueprint, request
 from init import db
+from models.amenity import Amenity, amenity_schema, amenities_schema
 
 amenity_bp = Blueprint("amenities", __name__, url_prefix="/amenities")
     

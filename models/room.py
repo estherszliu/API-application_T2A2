@@ -1,10 +1,10 @@
 from init import db, ma
 from marshmallow import fields, validates
-from marshmallow.validate import OneOf
 from marshmallow.exceptions import ValidationError
+from marshmallow.validate import OneOf
 
 
-VALID_TYPE = ("King", "Queen", "Double")
+VALID_TYPE = ("King", "Queen", "Double", "Single")
 
 class Room(db.Model):
     __tablename__ = "rooms"
@@ -27,7 +27,7 @@ class RoomSchema(ma.Schema):
             raise ValidationError(f"The price should a postive integer.")
 
     # room_amenity = fields.List(fields.Nested("Room_amenitySchema",exclude=["room"] ))
-    room_amenity = fields.List(fields.Nested("Room_amenityDumpSchema"))
+    room_amenity = fields.List(fields.Nested("Room_amenitySchema"))
     room_reservation = fields.List(fields.Nested("Room_reservationSchema",exclude=["room"] ))
 
     class Meta:

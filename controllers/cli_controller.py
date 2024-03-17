@@ -1,14 +1,13 @@
+from datetime import date, datetime
 from flask import Blueprint
-from datetime import datetime, timedelta, date
-
-from init import db, bcrypt
-from models.room import Room
+from init import bcrypt, db
 from models.amenity import Amenity
 from models.reservation import Reservation
-from models.user import User
+from models.room import Room
 from models.room_amenity import Room_amenity
-from models.user_reservation import User_reservation
 from models.room_reservation import Room_reservation
+from models.user import User
+from models.user_reservation import User_reservation
 
 db_commands = Blueprint("db", __name__)
 
@@ -29,16 +28,16 @@ def seed_tables():
 
     users = [
         User(
-            first_name ="Patrick",
-            last_name = "Cummins",
-            email="patrick@gmail.com",
+            first_name ="admin",
+            last_name = "user",
+            email="admin@gmail.com",
             password=bcrypt.generate_password_hash("123456").decode("utf-8"),
             is_admin=True
         ),
         User(
-            first_name="Esther",
-            last_name="Dennis",
-            email="esther@gmail.com",
+            first_name="standard",
+            last_name="user",
+            email="standard@gmail.com",
             password=bcrypt.generate_password_hash("123456").decode("utf-8")
         ),
         User(

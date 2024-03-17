@@ -1,3 +1,7 @@
+# How to run
+To run the app, run the following scripts
+* `src/run_reseed_db.sh` - to set up some mock data in the database
+* `src/run_app.sh` - to run the flask app
 # R1 Identification of the problem you are trying to solve by building this particular app.
 For nowadays most organizations in the hotel industry are experiencing poor booking management systems. Below are some problem:
 * Lack of efficiency - The big amount of manual booking such as phone booking, in person booking, email booking is really low efficiency, it will cause delays to the booking. Instead we should encourage the customer to use online booking systems to reduce the labor and make booking more efficient. 
@@ -12,7 +16,7 @@ Efficiency and booking management system is crucial for the hotel industry. With
 The customer satisfication is very import part, because once the customer is happy for the experience it will leads to a good review and more chance to come back for another stay, or the word of mouth to recommand to others. That will lead to more business for the company and more bookings in the competitive market. A lot of customers will also go somewhere else if the booking system is not easy and can be access online. And if the customer ends up having a conflict with another booking, this will make the customer very unhappy and will be bad for business for the hotel.
 
  A good online booking management system also reduces the need for people to manually enter and track the bookings which saves the company time and money. 
- 
+
  A well developed booking management system also tracks and updates the room availability in a real time to avoid the booking conflicts and allows rooms to be made available immedietely after cancellation. For the pricing part, the system can analyse the market price and provide a well chosen market price to maximise the profit. Since the hotel industry market is very dynamic and competitive, it is very important to use a well developed booking management system to make sure the business is staying on track and remaining competitive with the competition.
 
 # R3 Why have you chosen this database system. What are the drawbacks compared to others?
@@ -554,34 +558,37 @@ The Entity-Relationship Diagram (ERD) represent a hotel booking database system 
   * room_id - Integer, store the Foreign Key of the room id from room table, can not be null value. 
   * reservation_id - Integer, store the Foreign Key of the reservation id from reservations table, can not be null value. 
 
-![ERD](ERD.png)
+![ERD](docs/ERD.png)
 
 # R7 Detail any third party services that your app will use
 
-#### Flask
-Flask is a python web framework, it has lots of built-in functions to interact with database and route incoming requests. In this api application, I have user flask to create, drop, seed the datbase, and import blueprint to makes easy for the endpoint routing address, and import request function to load the json object. Flask is a great tool to create this api applicate. 
+### Flask
+* Flask is a python web framework, it has lots of built-in functions to interact with database and route incoming requests. In this api application, I have user flask to create, drop, seed the datbase, and import blueprint to makes easy for the endpoint routing address, and import request function to load the json object. Flask is a great tool to create this api applicate. 
 
-#### SQLAlchemy
-SQLAlchemy is a database toolkit and its Object-Relational Mapper (ORM) is used to manage access to the database. SQLAlchemy is very handy to connect tables relationship together. I have use for define the table class create the database, map the relationships between the tables, and make database CRUD operations.
+### SQLAlchemy
+* SQLAlchemy is a database toolkit and its Object-Relational Mapper (ORM) is used to manage access to the database. SQLAlchemy is very handy to connect tables relationship together. I have use for define the table class create the database, map the relationships between the tables, and make database CRUD operations.
 
-#### Marshmallow
- Marshmallow is a tool that is used for serialization, deserialization and data validation. I have used the tool to help convert objects to and from json and validate and sanitise data received from the API. 
+### Marshmallow
+ * Marshmallow is a tool that is used for serialization, deserialization and data validation. I have used the tool to help convert objects to and from json and validate and sanitise data received from the API. 
 
 
-#### PostgreSQL
-PostgreSQL is an open source relational database management system. I am using it to store the data for my api application. It provides full support for making complex queries and CRUD operations. 
+### PostgreSQL
+* PostgreSQL is an open source relational database management system. I am using it to store the data for my api application. It provides full support for making complex queries and CRUD operations. 
 
-#### Bcrypt
-Bcrypt is has cryptographic function that use to hashing the password to be unreadable to prevent user password safety avoid the internet hacker to steal or listen the password, even the hacker steal the password, but they can not read it. I have user bcrypt to hash the user's password. 
+### Bcrypt
+* Bcrypt is has cryptographic function that use to hashing the password to be unreadable to prevent user password safety avoid the internet hacker to steal or listen the password, even the hacker steal the password, but they can not read it. I have user bcrypt to hash the user's password. 
 
-#### JSON Web Tokens authentication and authorization
-JSON Web Tokens (JWT) are used for authentication and authorization. I am using them to securely transmit the user identity data to the application. JWTs contain all the required information within the token itself, making user interactions easier and more secure. Tokens can also have expiration dates set, requiring users to log in again after they expire.
+### JSON Web Tokens authentication and authorization
+* JSON Web Tokens (JWT) are used for authentication and authorization. I am using them to securely transmit the user identity data to the application. JWTs contain all the required information within the token itself, making user interactions easier and more secure. Tokens can also have expiration dates set, requiring users to log in again after they expire.
 
-#### Psycopg2
-Psycopg2 is a PostgreSQL adapter tool that allows Python to connect with the database and interact with database operations such as queries, insertions, updates, and deletions. I have used psycopg2 as a driver to connect with the database.
+### Psycopg2
+* Psycopg2 is a PostgreSQL adapter tool that allows Python to connect with the database and interact with database operations such as queries, insertions, updates, and deletions. I have used psycopg2 as a driver to connect with the database.
 
-#### dotenv
-The dotenv library is a Python library that provides an environment for sensitive data when configuring the database. Using dotenv, sensitive data is stored securely to prevent exposure to the public. In my application, I use dotenv to access psycopg2 for database connection and ensure that sensitive data is not stored in the environment to separate it from other data.
+### dotenv
+* The dotenv library is a Python library that provides an environment for sensitive data when configuring the database. Using dotenv, sensitive data is stored securely to prevent exposure to the public. In my application, I use dotenv to access psycopg2 for database connection and ensure that sensitive data is not stored in the environment to separate it from other data.
+
+### Bleach
+* Bleach is a Python library used for sanitising data. I used it to check my api inputs for bad characters and help keep the database safe from SQL injection attack.
 
 # R8 Describe your projects models in terms of the relationships they have with each other
 
@@ -619,7 +626,7 @@ These 4 tables will be related to each other with 3 many-to-many relationships
 * Room_amenity: many to many relationship
 
 These can be seen in the ERD as tables (4 entity tables and 3 junction tables)
-![ERD](ERD.png)
+![ERD](docs/ERD.png)
 
 ## User_reservation:
 User reservation gives the association between users and their reservations. Each user can make many reservations, and each reservation can include multiple users. This relation is implemented through a junction table that includes a Foreign key for both the user id and reservation id.
@@ -659,9 +666,11 @@ For this task I have used trello to help me complete the project on time. The ta
 Overall using Trello to manage the project was very helpful. It let me know what I had left to work on, and how I was going compared to my plans. It also helped me to organize my thoughts and work efficiently to finsish the project on time. 
 
 
-[link to trello](https://trello.com/b/pkvzygWN/hotel-api)
+* [Link to Trello](https://trello.com/b/pkvzygWN/hotel-api)
 
-![trello](trello.jpeg)
+* [Link to GitHub](https://github.com/estherszliu/API-application_T2A2)
+
+![trello](docs/trello.jpeg)
 
 
 
